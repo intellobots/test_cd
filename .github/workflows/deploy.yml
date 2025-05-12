@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, ec2, runner]
+    runs-on: [self-hosted, Linux, X64, ec2]
 
     steps:
     - name: Checkout Repo
