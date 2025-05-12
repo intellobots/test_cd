@@ -1,0 +1,28 @@
+name: Deploy Django App to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: SSH & Deploy
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          sudo -u appmgr -i << 'EOF'
+            cd /home/appmgr/test_cd
+            git pull origin main
+            docker-compose down
+            docker-compose up -d --build
+          EOF
