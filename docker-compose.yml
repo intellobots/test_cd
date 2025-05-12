@@ -1,10 +1,9 @@
-version: '3.8'
 
 services:
   web:
-    build: .
+    image: thingsx/thingsx_project:latest
     ports:
-      - "8000:8000"
+      - "8002:80"
     restart: always
     volumes:
       - .:/app

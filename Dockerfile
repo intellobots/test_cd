@@ -10,6 +10,6 @@ COPY . /app
 WORKDIR /app
 RUN uv sync --frozen --no-cache
 
-EXPOSE 8000
+EXPOSE 80
 
-CMD [".venv/bin/gunicorn", "thingsx_project.wsgi:application", "-b", "0.0.0.0:8000"]
+CMD ["uv","run", "gunicorn", "thingsx_project.wsgi:application", "-b", "0.0.0.0:80"]
