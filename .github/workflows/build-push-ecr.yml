@@ -1,0 +1,47 @@
+name: Build and Push Docker Image to ECR
+
+on:
+  push:
+    branches:
+      - main # Or your desired branch
+
+jobs:
+  build-and-push:
+    runs-on: codebuild-test_cd_dev-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and tag Docker image
+        id: build-image
+        run: |
+          IMAGE_TAG=$(echo "${{ github.sha }}" | head -c 7)
+          ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          IMAGE_URI="$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG"
+          echo "Building Docker image..."
+          docker build -t "$IMAGE_URI" .
+          echo "Image URI: $IMAGE_URI"
+          echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+
+      - name: Push Docker image to Amazon ECR
+        id: push-image
+        run: |
+          echo "Pushing Docker image to ECR..."
+          docker push "${{ steps.build-image.outputs.IMAGE_URI }}"
+          docker push "${{ steps.build-image.outputs.IMAGE_URI }}" | sed -e "s/:${{ steps.build-image.outputs.IMAGE_URI##*:}}/:latest/g" # Optional: Also tag as latest
+
+      - name: Output Image URI
+        run: |
+          echo "ECR Image URI: ${{ steps.build-image.outputs.IMAGE_URI }}"
+        
