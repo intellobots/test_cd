@@ -7,7 +7,8 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: codebuild-test_cd_dev-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,17 +32,23 @@ jobs:
           IMAGE_URI="$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG"
           echo "Building Docker image..."
           docker build -t "$IMAGE_URI" .
-          echo "Image URI: $IMAGE_URI"
+          echo "Image URI (SHA): $IMAGE_URI"
           echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
       - name: Push Docker image to Amazon ECR
         id: push-image
         run: |
-          echo "Pushing Docker image to ECR..."
+          echo "Pushing Docker image with SHA tag to ECR..."
           docker push "${{ steps.build-image.outputs.IMAGE_URI }}"
-          docker push "${{ steps.build-image.outputs.IMAGE_URI }}" | sed -e "s/:${{ steps.build-image.outputs.IMAGE_URI##*:}}/:latest/g" # Optional: Also tag as latest
 
-      - name: Output Image URI
+          echo "Tagging image as latest..."
+          ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          IMAGE_LATEST="$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY }}:latest"
+          docker tag "${{ steps.build-image.outputs.IMAGE_URI }}" "$IMAGE_LATEST"
+
+          echo "Pushing Docker image with latest tag to ECR..."
+          docker push "$IMAGE_LATEST"
+
+      - name: Output Image URI (SHA)
         run: |
-          echo "ECR Image URI: ${{ steps.build-image.outputs.IMAGE_URI }}"
-        
+          echo "ECR Image URI (SHA): ${{ steps.build-image.outputs.IMAGE_URI }}"
