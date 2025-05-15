@@ -7,8 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: codebuild-test_cd_dev-${{ github.run_id }}-${{ github.run_attempt }}
-
+    runs-on: self-hosted
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
