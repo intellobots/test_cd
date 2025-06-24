@@ -2,6 +2,7 @@ name : Communicating with Cliq
 on:
   #you may add the events you like to get notified
   push:
+  workflow_dispatch:
     
 jobs:
   test_name:
@@ -10,3 +11,5 @@ jobs:
       - uses: Integrations-dev/GitHub-Informer@v1
         with:
           channel-endpoint: ${{ secrets.ZOHO_ENDPOINT }}
+          workflow-dispatch-message: ':office: (workflow) has been dispatched by (me) at (repo) under (ref)'
+          push-message: 'A (event) is made into (repo) by (me).\n Good to see you make some Changes :new-year:'
