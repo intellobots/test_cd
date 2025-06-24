@@ -1,0 +1,12 @@
+name : Communicating with Cliq
+on:
+  #you may add the events you like to get notified
+  push:
+    
+jobs:
+  test_name:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Integrations-dev/GitHub-Informer@v1
+        with:
+          channel-endpoint: ${{ secrets.ZOHO_ENDPOINT }}
